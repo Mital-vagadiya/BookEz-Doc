@@ -1,21 +1,21 @@
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface MenuItem {
-  id: string; // Unique identifier for the menu item
-  name: string; // Display name of the menu item
-  href: string; // URL or link for the menu item
-  method?: string; // Optional HTTP method (e.g., GET, POST)
-  children?: MenuItem[]; // Optional nested children for expandable items
+  id: string;
+  name: string;
+  href: string;
+  method?: string;
+  children?: MenuItem[];
 }
 
 interface MenuSection {
-  title: string; // Title of the menu section
-  items: MenuItem[]; // List of menu items in the section
+  title: string;
+  items: MenuItem[];
 }
 
 interface MenuSectionsMapping {
-  [key: string]: MenuSection[]; // Mapping of tab IDs to their respective menu sections
+  [key: string]: MenuSection[];
 }
 
 const menuSectionsMapping: MenuSectionsMapping = {
@@ -31,7 +31,7 @@ const menuSectionsMapping: MenuSectionsMapping = {
             {
               id: "fetch-document",
               name: "Fetch Document",
-              href: "/api-reference/v1/fetch-document",
+              href: "/api-reference/v1/list-businesses",
               method: "GET",
             },
             {
@@ -61,7 +61,7 @@ const menuSectionsMapping: MenuSectionsMapping = {
             {
               id: "archive-document",
               name: "Archive Document",
-              href: "/api-reference/v1/archive-document",
+              href: "/api-reference/v1/archive-document1",
               method: "POST",
             },
           ],
@@ -144,7 +144,7 @@ const menuSectionsMapping: MenuSectionsMapping = {
     {
       title: "Get Started",
       items: [
-        { id: "/overview", name: "Overview", href: "/overview", active: true },
+        { id: "/overview", name: "Overview", href: "/overview" },
         {
           id: "/guides/how-it-works",
           name: "How It Works",
@@ -156,9 +156,9 @@ const menuSectionsMapping: MenuSectionsMapping = {
           href: "/guides/initial-setup",
         },
         {
-          id: "/guides/embedded-components",
+          id: "/embedded-components/guides",
           name: "Embedded Components",
-          href: "/guides/embedded-components",
+          href: "/embedded-components/guides",
         },
         {
           id: "/guides/business-onboarding",
@@ -238,15 +238,33 @@ const menuSectionsMapping: MenuSectionsMapping = {
       ],
     },
   ],
+  comp: [
+    {
+      title: "Components",
+      items: [
+        { id: "button", name: "Button", href: "/components/button" },
+        { id: "form", name: "Form", href: "/components/form" },
+      ],
+    },
+  ],
 };
-interface AppUseSidebarProps {
-  setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+
+interface SidebarContextType {
+  menuSections: MenuSection[];
+  expandedItems: Record<string, boolean>;
+  toggleExpand: (id: string) => void;
+  currentPath: string;
+  closeMobileMenu: () => void;
 }
 
-const useSidebar = ({ setIsMobileMenuOpen }: AppUseSidebarProps) => {
-  const [selectedTab, setSelectedTab] = useState<"doc" | "api" | "comp">("doc");
+const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+
+export const SidebarProvider: React.FC<{
+  children: React.ReactNode;
+  setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ children, setIsMobileMenuOpen }) => {
   const [menuSections, setMenuSections] = useState<MenuSection[]>(
-    menuSectionsMapping[selectedTab]
+    menuSectionsMapping["doc"]
   );
   const location = useLocation();
   const currentPath: string = location.pathname;
@@ -255,7 +273,53 @@ const useSidebar = ({ setIsMobileMenuOpen }: AppUseSidebarProps) => {
     {}
   );
 
-  // Toggle the expanded state of a parent item
+  useEffect(() => {
+    const pathSegments = currentPath.split("/");
+    switch (pathSegments[1]) {
+      case "overview":
+        setMenuSections(menuSectionsMapping["doc"]);
+        break;
+
+      case "api-reference":
+        setMenuSections(menuSectionsMapping["api"]);
+        break;
+
+      case "embedded-components":
+        setMenuSections(menuSectionsMapping["comp"]);
+        break;
+    }
+
+    // Automatically expand parent items with active children
+    const idsToExpand = new Set<string>();
+    
+    // Improved path matching logic
+    Object.values(menuSectionsMapping).forEach(sections => {
+      sections.forEach(section => {
+        section.items.forEach(item => {
+          // Check if the current path starts with the item's href (for parent routes)
+          // But don't expand for very short hrefs like "/" or "#" to prevent over-expansion
+          if (item.href !== "/" && item.href !== "#" && currentPath.startsWith(item.href) && item.children?.length) {
+            idsToExpand.add(item.id);
+          }
+          
+          // Check if current path matches or starts with any child's href
+          item.children?.forEach(child => {
+            if (currentPath === child.href || currentPath.startsWith(child.href)) {
+              idsToExpand.add(item.id);
+            }
+          });
+        });
+      });
+    });
+  
+    // Update expanded items state
+    setExpandedItems(prev => ({
+      ...prev,
+      ...Object.fromEntries([...idsToExpand].map(id => [id, true]))
+    }));
+    
+  }, [currentPath]);
+
   const toggleExpand = (id: string) => {
     setExpandedItems((prev) => ({
       ...prev,
@@ -263,24 +327,27 @@ const useSidebar = ({ setIsMobileMenuOpen }: AppUseSidebarProps) => {
     }));
   };
 
-  const handleTabChange = (tabId: "doc" | "api" | "comp") => {
-    console.log("🚀 ~ handleTabChange ~ tabId:", tabId);
-    setSelectedTab(tabId);
-    setMenuSections(menuSectionsMapping[tabId]);
-  };
-
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
 
-  return {
-    closeMobileMenu,
+  const value = {
     menuSections,
-    toggleExpand,
     expandedItems,
+    toggleExpand,
     currentPath,
-    handleTabChange,
+    closeMobileMenu,
   };
+
+  return (
+    <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
+  );
 };
 
-export default useSidebar;
+export const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (context === undefined) {
+    throw new Error("useSidebar must be used within a SidebarProvider");
+  }
+  return context;
+};

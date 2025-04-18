@@ -1,24 +1,24 @@
 const useHeader = () => {
   interface MenuItem {
-    id: "doc" | "api" | "comp"; // Unique identifier for the menu item
+    id: "guides" | "api-reference" | "embedded-components"; // Unique identifier for the menu item
     name: string; // Label for the menu item
     href: string; // URL or link for the menu item
   }
   const MenuData: MenuItem[] = [
     {
-      id: "doc",
+      id: "guides",
       name: "Documentation",
       href: "/overview",
     },
     {
-      id: "api",
+      id: "api-reference",
       name: "API Reference",
-      href: "/overview",
+      href: "/api-reference/v1/list-businesses",
     },
     {
-      id: "comp",
+      id: "embedded-components",
       name: "Embadded Components",
-      href: "/embadded/components",
+      href: "/embedded-components/guides",
     },
   ];
 

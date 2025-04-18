@@ -1,11 +1,13 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { AppRoutes } from "./routing/routes";
 import "./styles/global.scss";
 
-function App() {
+const AppContent = () => {
+
   return (
     <div className="App">
       <Routes>
+        <Route path="/" element={<Navigate to={'/overview'} replace />} />
         {AppRoutes.map((route, index) => (
           <Route key={index} path={route.path} element={<route.element />}>
             {route.children &&
@@ -14,6 +16,7 @@ function App() {
                   key={childIndex}
                   path={childRoute.path}
                   element={<childRoute.element />}
+                  index={childRoute.index}
                 />
               ))}
           </Route>
@@ -22,5 +25,11 @@ function App() {
     </div>
   );
 }
+
+const App = () => {
+  return (
+      <AppContent />
+  );
+};
 
 export default App;
