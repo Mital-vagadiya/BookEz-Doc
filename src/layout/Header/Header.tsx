@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { useState } from "react";
-import useSidebar from "../Sidebar/useSidebar";
+import { NavLink, useLocation } from "react-router-dom";
 import useHeader from "./useHeader";
 
 interface HeaderProps {
@@ -13,64 +13,67 @@ const Header: React.FC<HeaderProps> = ({
   onMenuButtonClick,
   setIsMobileMenuOpen,
 }) => {
-  const [open, setOpen] = useState(false);
-  const { MenuData } = useHeader();
-  const { handleTabChange } = useSidebar({ setIsMobileMenuOpen });
+    const [open, setOpen] = useState(false);
+    const { MenuData } = useHeader();
+    const location = useLocation();
 
-  return (
-    <header className={`sticky lg:fixed top-0 bg-background-light w-full z-1`}>
-      <div className="absolute w-full h-28 backdrop-blur flex-none transition-colors duration-500 border-b border-gray-500/5 supports-backdrop-blur:bg-background/60">
-        <div className="max-w-8xl mx-auto">
-          <div className="flex items-center lg:px-12 h-16 min-w-0 mx-4 lg:mx-0">
-            <div className="h-full relative flex-1 flex items-center lg:justify-start justify-between gap-x-4 min-w-0 border-b border-gray-500/5">
-              <div className="relative w-64 lg:w-96">
-                <div className="flex-1 flex items-center gap-x-4">
-                  <span className="sr-only">Layer</span>
-                  <img
-                    className="w-auto h-7 relative object-contain"
-                    src="https://mintlify.s3.us-west-1.amazonaws.com/layerfinancialtechnologiesinc/logo/layer_logo.svg"
-                    alt="light logo"
-                  />
-                  <div className="flex items-center gap-x-2"></div>
+    return (
+      <header className={`sticky lg:fixed top-0 bg-background-light w-full z-1`}>
+        <div className="absolute w-full h-28 backdrop-blur flex-none transition-colors duration-500 border-b border-gray-500/5 supports-backdrop-blur:bg-background/60">
+          <div className="max-w-8xl mx-auto">
+            <div className="flex items-center lg:px-12 h-16 min-w-0 mx-4 lg:mx-0">
+              <div className="h-full relative flex-1 flex items-center lg:justify-start justify-between gap-x-4 min-w-0 border-b border-gray-500/5">
+                <div className="relative w-64 lg:w-96">
+                  <div className="flex-1 flex items-center gap-x-4">
+                    <span className="sr-only">Layer</span>
+                    <img
+                      className="w-auto h-7 relative object-contain"
+                      src="https://mintlify.s3.us-west-1.amazonaws.com/layerfinancialtechnologiesinc/logo/layer_logo.svg"
+                      alt="light logo"
+                    />
+                    <div className="flex items-center gap-x-2"></div>
+                  </div>
                 </div>
-              </div>
-              <button
-                type="button"
-                className="hidden lg:flex relative flex-1 pointer-events-auto rounded-xl w-full items-center text-sm leading-6 py-1.5 pl-3.5 pr-3 shadow-sm text-gray-400 ring-1 ring-gray-400/20 hover:ring-gray-600/25 focus:outline-primary justify-between truncate gap-2 min-w-[43px] max-w-96"
-                onClick={() => setOpen(true)}
-              >
-                <div className="flex items-center gap-3 min-w-[42px]">
-                  <Search />
-                  <div className="truncate min-w-0">Search or ask...</div>
-                </div>
-                <span className="flex-none text-xs font-semibold">Ctrl K</span>
-              </button>
-              <div className="flex lg:hidden items-center gap-2">
                 <button
                   type="button"
-                  className="text-gray-500 w-8 h-8 flex items-center justify-center hover:text-gray-600"
-                  id="search-bar-entry-mobile"
+                  className="hidden lg:flex relative flex-1 pointer-events-auto rounded-xl w-full items-center text-sm leading-6 py-1.5 pl-3.5 pr-3 shadow-sm text-gray-400 ring-1 ring-gray-400/20 hover:ring-gray-600/25 focus:outline-primary justify-between truncate gap-2 min-w-[43px] max-w-96"
                   onClick={() => setOpen(true)}
                 >
-                  <span className="sr-only">Search...</span>
-                  <Search />
+                  <div className="flex items-center gap-3 min-w-[42px]">
+                    <Search />
+                    <div className="truncate min-w-0">Search or ask...</div>
+                  </div>
+                  <span className="flex-none text-xs font-semibold">Ctrl K</span>
                 </button>
+                <div className="flex lg:hidden items-center gap-2">
+                  <button
+                    type="button"
+                    className="text-gray-500 w-8 h-8 flex items-center justify-center hover:text-gray-600"
+                    id="search-bar-entry-mobile"
+                    onClick={() => setOpen(true)}
+                  >
+                    <span className="sr-only">Search...</span>
+                    <Search />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="hidden lg:flex px-12 h-12">
-            <div className="h-full flex text-sm space-x-6">
-              {MenuData?.map((item) => (
-                <div
-                  key={item.id}
-                  className="group relative h-full flex items-center font-medium text-gray-600 hover:text-primary cursor-pointer"
-                  onClick={() => handleTabChange(item.id)}
-                >
-                  {item.name}
-                  <div className="absolute bottom-0 h-[1.5px] w-full bg-primary"></div>
-                </div>
-              ))}
+            <div className="hidden lg:flex px-12 h-12">
+              <div className="h-full flex text-sm space-x-6">
+                {MenuData?.map((item) => (
+                  <NavLink
+                    key={item.id}
+                    to={item.href}
+                    className={({ isActive }) => 
+                      `group relative h-full flex items-center font-medium ${(isActive || location.pathname?.split('/')?.includes(item?.id)) ? 'text-primary active' : 'text-gray-600'} hover:text-primary`
+                    }
+                  >
+                    {item.name}
+                    <div className="absolute bottom-0 h-[1.5px] w-full bg-transparent group-hover:bg-primary/30 group-[.active]:bg-primary"></div>
+                  </NavLink>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -116,7 +119,6 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
         </div>
-      </div>
 
       <Dialog
         open={open}

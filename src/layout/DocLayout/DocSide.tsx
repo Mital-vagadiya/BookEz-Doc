@@ -1,5 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { MenuSVG } from "../../assets";
+import { useLocation } from "react-router-dom";
+
+const scrollbarStyles = `
+  .code-block pre::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+  }
+
+  .code-block pre::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  .code-block:hover pre::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  .code-block pre {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .code-block:hover pre {
+    scrollbar-color: #555 #333;
+  }
+`;
 
 interface TOCItem {
   id: string; // The ID of the section
@@ -8,11 +35,18 @@ interface TOCItem {
 }
 
 interface DocSideProps {
-  tocItems: TOCItem[]; // Array of table of contents items
+  tocItems?: TOCItem[]; // Array of table of contents items
+  requestBlock?: React.ReactNode;
+  responseBlock?: React.ReactNode;
 }
 
-const DocSide: React.FC<DocSideProps> = ({ tocItems }) => {
-  const [activeId, setActiveId] = useState<string>(tocItems[0]?.id || ""); // Default to the first item
+const DocSide: React.FC<DocSideProps> = ({
+  tocItems,
+  requestBlock,
+  responseBlock,
+}) => {
+  const [activeId, setActiveId] = useState<string>(tocItems?.[0]?.id || ""); // Default to the first item
+  const loaction = useLocation();
 
   //   useEffect(() => {
   //     const handleIntersection = (entries: IntersectionObserverEntry[]) => {
@@ -100,6 +134,28 @@ const DocSide: React.FC<DocSideProps> = ({ tocItems }) => {
       </ul>
     );
   };
+
+  const renderApiItems = () => {
+    return (
+      <div
+        className="flex flex-col sticky top-[9.5rem] gap-2 h-[calc(100vh-9.5rem)] overflow-hidden"
+        id="content-side-layout"
+      >
+        <div className="flex flex-col space-y-4 w-md max-w-md mx-auto">
+          <style>{scrollbarStyles}</style>
+
+          {/* Request Panel */}
+          {requestBlock}
+
+          {/* Response Panel */}
+          {responseBlock}
+        </div>
+      </div>
+    );
+  };
+
+  if (loaction.pathname?.split("/")?.includes("api-reference"))
+    return renderApiItems();
 
   return (
     <div

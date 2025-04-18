@@ -94,7 +94,7 @@ const HowItWorks = () => {
             <strong>Embedded Components</strong> - Layer provides a suite of
             pre-built React UI components you can use directly within your
             frontend. For more information see{" "}
-            <a href="/guides/embedded-components">Embedded Components</a>.
+            <a href="/embedded-components/guides">Embedded Components</a>.
           </li>
           <li>
             <strong>API</strong> - Build your own accounting UIs directly on top

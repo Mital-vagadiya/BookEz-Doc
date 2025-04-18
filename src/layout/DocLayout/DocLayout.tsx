@@ -5,21 +5,23 @@ import Footer from "../Footer/Footer";
 import DocSide from "./DocSide";
 
 interface TOCItem {
-  id: string; // The ID of the section
-  title: string; // The title of the section
-  children?: TOCItem[]; // Optional subitems
+  id: string;
+  title: string;
+  children?: TOCItem[];
 }
 
 interface LayoutProps {
-  title: string; // Page title
-  subTitle: string; // Page subtitle
-  subText: string; // Page subtext
-  tocItems: { id: string; title: string; children?: TOCItem[];}[]; // Table of contents items
-  children: ReactNode; // Page-specific content
+  title: string;
+  subTitle: string;
+  subText: string;
+  tocItems?: TOCItem[];
+  children: ReactNode;
+  responseBlock?: React.ReactNode;
+  requestBlock?: React.ReactNode;
   pagination?: {
     prev?: { href: string; label: string };
     next?: { href: string; label: string };
-  }; // Optional pagination links
+  };
 }
 
 const DocLayout: React.FC<LayoutProps> = ({
@@ -29,14 +31,15 @@ const DocLayout: React.FC<LayoutProps> = ({
   tocItems,
   children,
   pagination,
+  responseBlock,
+  requestBlock
 }) => {
-  
   return (
     <div className="" id="content-container">
-      <div className="flex flex-row gap-12 box-border w-full">
+      <div className="flex flex-row xl:gap-12 box-border w-full">
         {/* Main Content Area */}
         <div
-          className="relative grow box-border flex-col w-full mx-auto px-1 lg:pl-[23.7rem] lg:-ml-12 xl:w-[calc(100%-28rem)]"
+          className="relative grow box-border flex-col w-full mx-auto px-1 lg:pl-[22rem] xl:pl-[24rem] lg:-ml-12 xl:w-[calc(100%-28rem)]"
           id="content-area"
         >
           {/* Header */}
@@ -56,8 +59,10 @@ const DocLayout: React.FC<LayoutProps> = ({
           <Footer />
         </div>
 
-        {/* Sidebar */}
-        <DocSide tocItems={tocItems} />
+        {/* Sidebar - hidden on sm and md screens */}
+        <div className="hidden xl:block">
+          <DocSide tocItems={tocItems} requestBlock={requestBlock} responseBlock={responseBlock}/>
+        </div>
       </div>
     </div>
   );
